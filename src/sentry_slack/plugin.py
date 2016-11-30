@@ -147,10 +147,8 @@ class SlackPlugin(notify.NotificationPlugin):
         channel = (self.get_option('channel', project) or '').strip()
 
         title = group.message_short.encode('utf-8')
-        if group.culprit:
-            culprit = group.culprit.encode('utf-8')
-        else:
-            culprit = None
+        title_link = group.get_absolute_url()
+        culprit = group.culprit.encode('utf-8') if group.culprit else None
         project_name = get_project_full_name(project).encode('utf-8')
 
         fields = []
@@ -168,6 +166,12 @@ class SlackPlugin(notify.NotificationPlugin):
             'title': 'Project',
             'value': project_name,
             'short': True,
+        })
+
+        fields.append({
+            'title': 'Issue Link',
+            'value': title_link,
+            'short': False,
         })
 
         if self.get_option('include_rules', project):
@@ -209,7 +213,7 @@ class SlackPlugin(notify.NotificationPlugin):
             'attachments': [{
                 'fallback': '[%s] %s' % (project_name, title),
                 'title': title,
-                'title_link': group.get_absolute_url(),
+                'title_link': title_link,
                 'color': self.color_for_group(group),
                 'fields': fields,
             }]
